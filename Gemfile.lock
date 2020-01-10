@@ -1,0 +1,29 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    http-2-next (0.2.1)
+    httpx (0.6.3)
+      http-2-next (>= 0.1.2)
+      timers
+    mini_portile2 (2.4.0)
+    nokogiri (1.10.7)
+      mini_portile2 (~> 2.4.0)
+    pg (1.2.2)
+    rss (0.2.8)
+    sequel (5.28.0)
+    sqlite3 (1.4.2)
+    timers (4.3.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  httpx (~> 0.6)
+  nokogiri (~> 1.10)
+  pg (~> 1.2)
+  rss (~> 0.2)
+  sequel (~> 5.28)
+  sqlite3 (~> 1.4)
+
+BUNDLED WITH
+   2.1.2
