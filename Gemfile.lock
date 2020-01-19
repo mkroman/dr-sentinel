@@ -2,10 +2,15 @@ GEM
   remote: https://rubygems.org/
   specs:
     http-2-next (0.2.1)
-    httpx (0.6.3)
+    httpx (0.6.4)
       http-2-next (>= 0.1.2)
       timers
+    little-plugger (1.1.4)
+    logging (2.2.2)
+      little-plugger (~> 1.1)
+      multi_json (~> 1.10)
     mini_portile2 (2.4.0)
+    multi_json (1.14.1)
     nokogiri (1.10.7)
       mini_portile2 (~> 2.4.0)
     pg (1.2.2)
@@ -19,6 +24,7 @@ PLATFORMS
 
 DEPENDENCIES
   httpx (~> 0.6)
+  logging (~> 2.2)
   nokogiri (~> 1.10)
   pg (~> 1.2)
   rss (~> 0.2)
