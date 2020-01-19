@@ -38,7 +38,6 @@ config_path = File.expand_path options[:config_path]
 
 unless File.readable? config_path
   fail "Configuration file `#{config_path}' is not readable!"
-
   exit 1
 end
 
@@ -53,10 +52,7 @@ database_url = database_config.fetch 'url', DR::Sentinel::DEFAULT_DATABASE_URL
 DR::Sentinel::Database = Sequel.connect database_url
 DR::Sentinel.load_models!
 
-@sentinel = DR::Sentinel::Server.new config_path, config
-
-trap 'INT' do
-  @sentinel.stop
+# Seed data
+if DR::Sentinel::Feed.empty?
+  DR::Sentinel::Feed.create name: 'DR', url: 'https://www.dr.dk/nyheder/service/feeds/allenyheder'
 end
-
-@sentinel.run
