@@ -29,6 +29,12 @@ module DR
         @polling = true
 
         while @polling
+          pending_feeds = Feed.all.select(&:pending_refresh?)
+
+          pending_feeds.each do |feed|
+            @logging.debug "Requesting `#{feed.url}'"
+          end
+
           sleep 1
         end
       end
