@@ -56,22 +56,43 @@ module DR
       # @param feed [Feed] the feed to process
       def update_feed feed
         response = @http.headers('user-agent' => http_user_agent).get feed.url
+        response_body = response.body.to_s
 
         if response.status == 200
-          puts "Status: #{response.status}"
-          puts "Headers: #{response.headers.inspect}"
-          puts "Body:"
-          puts response.body
+          parsed_feed = RSS::Parser.parse response_body
 
-          # Update the feeds checked_at time
-          feed.checked_at = DateTime.now
-          feed.save
+          parsed_feed.items.each do |item|
+          end
         else
           @logger.error "Unexpected response status #{response.status} when requesting #{feed.url}"
         end
+
+        if response.status == 200
+          # Update the feeds checked_at time
+          feed.checked_at = DateTime.now
+          feed.save
+        end
+
+        # Save the HTTP request to the database
+        save_httpx_response response, feed.url, response_body
       end
 
     private
+
+      # Saves the given httpx response to the database
+      def save_httpx_response response, request_url, response_body
+        request = HTTPRequest.new
+        request.version = response.version
+        request.request_url = request_url
+        request.response_code = response.status
+        request.response_headers_json = Zstd.compress response.headers.to_hash.to_json
+        @logging.debug "Size before compression: #{response_body.bytesize}"
+        compressed_body = Zstd.compress response_body
+        @logging.debug "Size after compression: #{compressed_body.bytesize}"
+        request.response_body = compressed_body
+        request.compression = 'zstd'
+        request.save
+      end
 
       # Returns headers that is used by default for each outgoing request.
       def default_headers

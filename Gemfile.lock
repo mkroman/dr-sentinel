@@ -18,6 +18,7 @@ GEM
     sequel (5.28.0)
     sqlite3 (1.4.2)
     timers (4.3.0)
+    zstd-ruby (1.4.4.0)
 
 PLATFORMS
   ruby
@@ -30,6 +31,7 @@ DEPENDENCIES
   rss (~> 0.2)
   sequel (~> 5.28)
   sqlite3 (~> 1.4)
+  zstd-ruby (~> 1.4)
 
 BUNDLED WITH
    2.1.2

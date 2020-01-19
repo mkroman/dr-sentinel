@@ -5,6 +5,7 @@ require 'httpx'
 require 'sequel'
 require 'nokogiri'
 require 'logging'
+require 'zstd-ruby'
 
 # Set up logging
 Logging.color_scheme 'meta', {
@@ -39,6 +40,7 @@ module DR
 
     def self.load_models!
       require_relative './sentinel/models/feed'
+      require_relative './sentinel/models/http_request'
       # require_relative './sentinel/models/article'
     end
   end
