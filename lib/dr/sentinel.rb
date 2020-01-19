@@ -35,6 +35,7 @@ require_relative './sentinel/server'
 module DR
   module Sentinel
     DEFAULT_DATABASE_URL = 'sqlite://db/database.db'
+    DEFAULT_USER_AGENT = "mkroman-dr-sentinel / #{VERSION} (github.com/mkroman/dr-sentinel)"
 
     def self.load_models!
       require_relative './sentinel/models/feed'
