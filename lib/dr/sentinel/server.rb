@@ -68,7 +68,7 @@ module DR
           Database.transaction do
             feed_entries.each do |entry|
               entry.feed = feed
-              entry.request = http_request
+              entry.http_request = http_request
               entry.save
             end
           end
