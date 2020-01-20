@@ -1,0 +1,7 @@
+require: rubocop-performance
+
+Style/MethodDefParentheses:
+  Enabled: false
+
+Metrics/LineLength:
+  Max: 100

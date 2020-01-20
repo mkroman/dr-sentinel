@@ -13,4 +13,6 @@ end
 
 group :development do
   gem 'sqlite3', '~> 1.4'
+  gem 'rubocop', require: false
+  gem 'rubocop-performance', require: false
 end

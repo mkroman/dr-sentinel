@@ -1,10 +1,12 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    ast (2.4.0)
     http-2-next (0.2.1)
     httpx (0.6.4)
       http-2-next (>= 0.1.2)
       timers
+    jaro_winkler (1.5.4)
     little-plugger (1.1.4)
     logging (2.2.2)
       little-plugger (~> 1.1)
@@ -13,11 +15,26 @@ GEM
     multi_json (1.14.1)
     nokogiri (1.10.7)
       mini_portile2 (~> 2.4.0)
+    parallel (1.19.1)
+    parser (2.7.0.2)
+      ast (~> 2.4.0)
     pg (1.2.2)
+    rainbow (3.0.0)
     rss (0.2.8)
+    rubocop (0.79.0)
+      jaro_winkler (~> 1.5.1)
+      parallel (~> 1.10)
+      parser (>= 2.7.0.1)
+      rainbow (>= 2.2.2, < 4.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (>= 1.4.0, < 1.7)
+    rubocop-performance (1.5.2)
+      rubocop (>= 0.71.0)
+    ruby-progressbar (1.10.1)
     sequel (5.28.0)
     sqlite3 (1.4.2)
     timers (4.3.0)
+    unicode-display_width (1.6.1)
     zstd-ruby (1.4.4.0)
 
 PLATFORMS
@@ -29,6 +46,8 @@ DEPENDENCIES
   nokogiri (~> 1.10)
   pg (~> 1.2)
   rss (~> 0.2)
+  rubocop
+  rubocop-performance
   sequel (~> 5.28)
   sqlite3 (~> 1.4)
   zstd-ruby (~> 1.4)
