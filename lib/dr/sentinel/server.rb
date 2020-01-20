@@ -56,17 +56,21 @@ module DR
       # @param feed [Feed] the feed to process
       def update_feed feed
         response = @http.headers('user-agent' => http_user_agent).get feed.url
-
         response_body = response.body.to_s
+
+        # Save the HTTP request to the database
+        http_request = save_httpx_response response, feed.url, response_body
 
         if response.status == 200
           parsed_feed = RSS::Parser.parse response_body
+          feed_entries = prepare_feed_entries parsed_feed, feed
 
-          case parsed_feed
-          when RSS::Rss
-            process_rss_feed parsed_feed, feed
-          when RSS::Atom::Feed
-            process_atom_feed parsed_feed, feed
+          Database.transaction do
+            feed_entries.each do |entry|
+              entry.feed = feed
+              entry.request = http_request
+              entry.save
+            end
           end
         else
           @logger.error "Unexpected response status #{response.status} when requesting #{feed.url}"
@@ -74,36 +78,34 @@ module DR
 
         if response.status == 200
           # Update the feeds checked_at time
-          feed.checked_at = DateTime.now
-          feed.save
+          feed.update checked_at: DateTime.now
         end
-
-        # Save the HTTP request to the database
-        save_httpx_response response, feed.url, response_body
       end
 
-      def process_rss_feed feed, feed_db_instance
-        entries = {}
+      # Takes an RSS/Atom feed/channel and looks up which items aren't already
+      # in the database, and then it creates a list of unsaved feed entry
+      # instances for the missing items, ready to be saved.
+      #
+      # @param [RSS:Rss, RSS::Atom::Feed] atom_or_rss_feed rss or atom feed
+      # @param [Feed] feed_instance feed model instance
+      #
+      # @return [Array<FeedEntry>] list of unsaved feed entries ready to be
+      #   saved.
+      def prepare_feed_entries atom_or_rss_feed, feed_instance
+        items = feed_to_items_hash atom_or_rss_feed
+        entries = FeedEntry
+                  .select(:guid)
+                  .where(guid: items.keys, feed: feed_instance)
+                  .all
+        existing_guids = entries.map &:guid
+        nonexisting_items = items.reject { |guid, _| existing_guids.include? guid }
 
-        feed.items.each do |item|
-          entries[item.guid.content] = item
-        end
+        raise NotImplementedError unless atom_or_rss_feed.is_a? RSS::Rss
 
-        feed_entries = FeedEntry
-                       .select(:guid)
-                       .where(feed: feed_db_instance, guid: entries.keys)
-                       .all
-        feed_entry_guids = feed_entries.map &:guid
-        new_entries = feed.items.reject { |item| feed_entry_guids.include?(item.guid.content) }
-
-        puts "new entries: #{new_entries}"
+        nonexisting_items.map { |_, item| feed_entry_from_rss_item item }
       end
 
-      def process_atom_feed _feed, _feed_db_instance
-        @logging.warn 'atom support not implemented yet'
-      end
-
-    private
+      private
 
       # Saves the given httpx response to the database
       def save_httpx_response response, request_url, response_body
@@ -115,7 +117,7 @@ module DR
         request = HTTPRequest.new(
           version: response.version,
           request_url: request_url,
-          compression: 'zstd',
+          compression: "zstd/#{Zstd.zstd_version}",
           response_code: response.status,
           response_body: compressed_body,
           response_headers_json: Zstd.compress(response.headers.to_hash.to_json)
@@ -124,11 +126,40 @@ module DR
         request.save
       end
 
+      # Takes an RSS/Atom feed/channel and returns the items as a hash where the
+      # key is the items GUID and the value is the item.
+      #
+      # @param [RSS:Rss, RSS::Atom::Feed] feed rss or atom feed.
+      def feed_to_items_hash feed
+        if feed.is_a? RSS::Rss
+          feed.items.map { |item| [item.guid.content, item] }.to_h
+        else
+          feed.items.map { |item| [item.id, item] }.to_h
+        end
+      end
+
       # Returns headers that is used by default for each outgoing request.
       def default_headers
         {
           'User-Agent' => http_user_agent
         }
+      end
+
+      # Creates a new unsaved +FeedEntry+ with populated columns from the
+      #   provided +item+.
+      #
+      # @param [RSS::Rss::Channel::Item] item the RSS item from which data will
+      #   be populated.
+      #
+      # @return [FeedEntry] unsaved FeedEntry with columns populated from +item+
+      def feed_entry_from_rss_item item
+        FeedEntry.new(
+          guid: item.guid.content,
+          link: item.link,
+          title: item.title,
+          description: item.description,
+          published_at: item.pubDate
+        )
       end
     end
   end

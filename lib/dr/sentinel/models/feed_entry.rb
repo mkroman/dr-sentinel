@@ -4,13 +4,9 @@ module DR
   module Sentinel
     class FeedEntry < Sequel::Model
       many_to_one :feed
+      many_to_one :request, left_key: :request_id, class: 'DR::Sentinel::HTTPRequest'
 
-      def self.new_from_rss_item item
-        new(
-          guid: item.guid.content,
-          description: item.description
-        )
-      end
+      plugin :timestamps
     end
   end
 end
