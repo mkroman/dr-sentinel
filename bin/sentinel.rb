@@ -51,6 +51,7 @@ database_config = config.fetch 'db', {}
 database_url = database_config.fetch 'url', DR::Sentinel::DEFAULT_DATABASE_URL
 
 DR::Sentinel::Database = Sequel.connect database_url
+DR::Sentinel::Database.loggers << Logging.logger['DR::Sentinel::Database']
 DR::Sentinel.load_models!
 
 @sentinel = DR::Sentinel::Server.new config_path, config
